@@ -1,0 +1,1429 @@
+
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculatrice scientifique rose</title>
+
+<style>
+:root {
+  --fond:#2B1024;
+  --lcd:#180B16;
+  --carte:#421A35;
+  --num:#6B2850;
+  --sci:#512040;
+  --texte:#FFF0F7;
+  --doux:#E6A9C7;
+  --violet:#E85DAB;
+  --menthe:#FFB6D5;
+  --corail:#FF6B9D;
+  --grille:#6B2850;
+  --ombre:rgba(0,0,0,.32);
+  color-scheme:dark;
+}
+
+:root[data-theme="light"] {
+  --fond:#FFF0F7;
+  --lcd:#FFE0EF;
+  --carte:#FFFFFF;
+  --num:#F7C7DF;
+  --sci:#FCE4F0;
+  --texte:#4A1633;
+  --doux:#9B5578;
+  --violet:#D94691;
+  --menthe:#A91F69;
+  --corail:#D92F76;
+  --grille:#F0B9D5;
+  --ombre:rgba(130,35,90,.16);
+  color-scheme:light;
+}
+
+* {
+  box-sizing:border-box;
+  margin:0;
+}
+
+[hidden] {
+  display:none !important;
+}
+
+body {
+  background:var(--fond);
+  color:var(--texte);
+  font-family:system-ui,sans-serif;
+  min-height:100vh;
+}
+
+button {
+  font:inherit;
+  color:inherit;
+  border:0;
+  cursor:pointer;
+  transition:transform .08s,filter .15s;
+}
+
+button:active {
+  transform:translateY(2px);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline:2px solid var(--menthe);
+  outline-offset:2px;
+}
+
+header {
+  display:flex;
+  flex-wrap:wrap;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 28px;
+}
+
+nav {
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  background:var(--carte);
+  padding:5px;
+  border-radius:14px;
+}
+
+nav button {
+  padding:8px 12px;
+  border-radius:10px;
+  background:none;
+  color:var(--doux);
+  font-weight:600;
+}
+
+nav .actif {
+  background:var(--violet);
+  color:#fff;
+}
+
+.droite {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+}
+
+#theme {
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:var(--carte);
+}
+
+main {
+  padding:0 28px 40px;
+}
+
+.calc {
+  display:grid;
+  grid-template-columns:minmax(300px,420px) minmax(220px,280px);
+  gap:24px;
+  justify-content:center;
+  align-items:start;
+}
+
+.appareil,.historique,.carte {
+  background:var(--carte);
+  border-radius:24px;
+  padding:20px;
+}
+
+.lcd {
+  background:var(--lcd);
+  border-radius:18px;
+  padding:10px 16px 14px;
+  text-align:right;
+  overflow:hidden;
+}
+
+.haut {
+  display:flex;
+  gap:2px;
+  align-items:center;
+}
+
+.haut button {
+  background:none;
+  color:var(--doux);
+  font-size:.8rem;
+  padding:4px 8px;
+  border-radius:8px;
+}
+
+#mem {
+  margin-left:auto;
+  color:var(--menthe);
+  font-family:monospace;
+}
+
+#trace {
+  min-height:1.3em;
+  margin-top:8px;
+  color:var(--doux);
+  font-size:.9rem;
+  overflow-wrap:anywhere;
+}
+
+#ecran {
+  font:600 2.4rem monospace;
+  white-space:nowrap;
+  overflow-x:auto;
+  min-height:1.4em;
+}
+
+.grille {
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+
+.grille button {
+  box-shadow:0 3px 0 var(--ombre);
+}
+
+.grille button:hover {
+  filter:brightness(1.2);
+}
+
+.sci {
+  grid-template-columns:repeat(5,minmax(0,1fr));
+}
+
+.sci button {
+  height:42px;
+  border-radius:12px;
+  background:var(--sci);
+  color:var(--menthe);
+  font-size:.95rem;
+}
+
+.sci [data-k="("],
+.sci [data-k=")"] {
+  background:var(--num);
+  color:var(--texte);
+}
+
+.sci #deg {
+  background:var(--menthe);
+  color:var(--lcd);
+  font-weight:700;
+}
+
+.pave {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-rows:repeat(4,65px) 78px;
+  margin-top:18px;
+}
+
+.pave button {
+  border-radius:18px;
+  background:var(--num);
+  font-size:1.6rem;
+  font-weight:600;
+}
+
+.pave [data-k="C"],
+.pave [data-k="0"] {
+  grid-column:span 2;
+}
+
+.pave .op {
+  background:var(--violet);
+  color:#fff;
+}
+
+.pave .c {
+  color:var(--corail);
+}
+
+.pave .egal {
+  font-size:2rem;
+}
+
+button.egal {
+  background:var(--corail);
+  color:#fff;
+}
+
+.historique {
+  max-height:600px;
+  overflow-y:auto;
+}
+
+.titre {
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.titre button {
+  background:none;
+  color:var(--corail);
+}
+
+#histo {
+  list-style:none;
+  padding:0;
+}
+
+#histo:empty::before {
+  content:"Aucun calcul pour l'instant.";
+  color:var(--doux);
+}
+
+#histo li {
+  padding:10px;
+  border-radius:12px;
+  cursor:pointer;
+  text-align:right;
+  overflow-wrap:anywhere;
+}
+
+#histo li:hover {
+  background:var(--sci);
+}
+
+#histo small {
+  display:block;
+  color:var(--doux);
+  font-family:monospace;
+}
+
+#histo b {
+  font:600 1.1rem monospace;
+}
+
+.carte {
+  max-width:560px;
+  margin:0 auto;
+}
+
+.carte.large {
+  max-width:860px;
+}
+
+.champs {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin:16px 0;
+}
+
+label {
+  color:var(--doux);
+  display:block;
+  min-width:0;
+}
+
+input,select {
+  width:100%;
+  margin-top:6px;
+  padding:12px;
+  border-radius:14px;
+  border:0;
+  background:var(--num);
+  color:var(--texte);
+  font:1rem monospace;
+}
+
+select {
+  font-family:system-ui,sans-serif;
+}
+
+.boutons,.ligne {
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:end;
+  margin-top:12px;
+}
+
+.ligne label {
+  flex:1;
+}
+
+.boutons button,.ligne button {
+  padding:12px 18px;
+  border-radius:14px;
+  background:var(--num);
+  font-weight:600;
+}
+
+.boutons button.egal,.ligne button.egal {
+  background:var(--corail);
+}
+
+#sortie p,#resultConv p,#resultBase p {
+  margin-top:12px;
+  font-size:1.05rem;
+  overflow-wrap:anywhere;
+}
+
+.err {
+  color:var(--corail);
+}
+
+#graphe {
+  width:100%;
+  height:auto;
+  margin-top:16px;
+  border-radius:18px;
+  background:var(--lcd);
+  touch-action:none;
+}
+
+.aide {
+  margin-top:12px;
+  color:var(--doux);
+  font-size:.85rem;
+  line-height:1.6;
+}
+
+@media(max-width:760px) {
+  header,main {
+    padding-left:14px;
+    padding-right:14px;
+  }
+
+  .calc {
+    grid-template-columns:1fr;
+  }
+
+  .champs {
+    grid-template-columns:1fr;
+  }
+
+  .pave {
+    grid-template-rows:repeat(4,60px) 72px;
+  }
+
+  nav button {
+    padding:8px;
+    font-size:.85rem;
+  }
+}
+
+/* Professional compact layout refresh */
+:root{--fond:#170817;--lcd:#09050d;--carte:#291329;--num:#512044;--sci:#35152f;--texte:#fff4fb;--doux:#d6a9c8;--violet:#d83d9c;--menthe:#ff9bd1;--corail:#ff4f9a;--grille:#512044;--ombre:rgba(0,0,0,.42)}
+:root[data-theme="light"]{--fond:#fff4fa;--lcd:#fffafd;--carte:#fff;--num:#f5d1e5;--sci:#fbe8f3;--texte:#42132f;--doux:#94617e;--violet:#cf318c;--menthe:#a51c68;--corail:#d92f76;--grille:#f0c6dd;--ombre:rgba(130,35,90,.15)}
+body{background:radial-gradient(ellipse at 12% 0%,rgba(205,45,145,.16),transparent 38%),var(--fond);letter-spacing:.01em}
+header{padding:18px clamp(14px,3vw,42px);border-bottom:1px solid color-mix(in srgb,var(--violet) 28%,transparent);background:color-mix(in srgb,var(--fond) 88%,transparent);position:sticky;top:0;z-index:5;backdrop-filter:blur(14px)}
+header h1{font-size:clamp(1.25rem,2.2vw,2rem);font-weight:800;letter-spacing:-.04em;background:linear-gradient(100deg,var(--texte),var(--menthe));-webkit-background-clip:text;background-clip:text;color:transparent}
+nav{border:1px solid color-mix(in srgb,var(--violet) 22%,transparent);box-shadow:0 8px 24px var(--ombre)}
+nav button{font-size:.88rem;padding:9px 13px}
+nav .actif{box-shadow:0 4px 14px color-mix(in srgb,var(--violet) 35%,transparent)}
+main{padding:clamp(12px,2vw,28px) clamp(12px,3vw,42px) 44px;max-width:1500px;margin:auto}
+.calc{width:100%;max-width:1180px;margin:0 auto;grid-template-columns:minmax(0,1.45fr) minmax(270px,.8fr);gap:18px;align-items:stretch}
+.appareil,.historique,.carte{border:1px solid color-mix(in srgb,var(--violet) 25%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--carte) 96%,white 4%),var(--carte));box-shadow:0 16px 42px var(--ombre),inset 0 1px 0 rgba(255,255,255,.05);border-radius:22px}
+.appareil{padding:clamp(12px,2vw,22px)}
+.lcd{border:1px solid color-mix(in srgb,var(--menthe) 22%,transparent);box-shadow:inset 0 0 28px rgba(0,0,0,.22);padding:14px 18px 16px}
+#status{font-size:.76rem!important;letter-spacing:.12em;text-transform:uppercase}
+#trace{font-family:ui-monospace,monospace;min-height:1.5em}
+#ecran{font-size:clamp(2rem,4vw,3rem);font-variant-numeric:tabular-nums}
+.grille{gap:clamp(6px,.85vw,10px)}
+.sci{grid-template-columns:repeat(6,minmax(0,1fr));margin-top:14px}
+.sci button{height:clamp(40px,4.2vw,52px);border:1px solid color-mix(in srgb,var(--violet) 17%,transparent);border-radius:13px;font-weight:650;font-size:clamp(.78rem,1.1vw,.98rem);background:linear-gradient(150deg,var(--sci),color-mix(in srgb,var(--sci) 72%,var(--fond)));box-shadow:0 4px 0 var(--ombre),inset 0 1px 0 rgba(255,255,255,.06)}
+.sci button:hover,.pave button:hover{filter:brightness(1.18);transform:translateY(-1px)}
+.sci button.inverse{background:linear-gradient(145deg,color-mix(in srgb,var(--violet) 72%,var(--sci)),color-mix(in srgb,var(--corail) 34%,var(--fond)));border-color:color-mix(in srgb,var(--corail) 48%,transparent);color:#fff;font-weight:800}
+.sci button.inverse:focus-visible{outline:2px solid var(--menthe);outline-offset:3px}
+.sci #deg{background:var(--menthe);color:#210b1c}
+.pave{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:repeat(5,clamp(52px,5.6vw,68px));gap:9px;margin-top:15px}
+.pave button{border:1px solid color-mix(in srgb,var(--violet) 20%,transparent);border-radius:15px;background:linear-gradient(145deg,var(--num),color-mix(in srgb,var(--num) 65%,var(--fond)));font-size:clamp(1.25rem,2vw,1.65rem);box-shadow:0 5px 0 var(--ombre),inset 0 1px 0 rgba(255,255,255,.07)}
+.pave .op{background:linear-gradient(145deg,var(--violet),#9f246f)}
+.pave .egal{background:linear-gradient(145deg,var(--corail),#c72d7b)}
+.historique{max-height:none;min-height:100%;padding:18px;overflow:auto}
+.titre{align-items:center;border-bottom:1px solid color-mix(in srgb,var(--violet) 22%,transparent);padding-bottom:12px;margin-bottom:8px}
+.titre h2,.carte h2{font-size:1.08rem;letter-spacing:-.02em}
+.titre button{padding:7px 11px;border-radius:9px;background:var(--sci)}
+#histo li{border-bottom:1px solid color-mix(in srgb,var(--violet) 12%,transparent);padding:13px 10px;border-radius:10px}
+#histo li:hover{background:var(--sci)}
+.carte{padding:clamp(16px,2.2vw,24px)}
+.carte.large{max-width:1100px}
+input,select{border:1px solid color-mix(in srgb,var(--violet) 28%,transparent);box-shadow:inset 0 2px 8px rgba(0,0,0,.12)}
+.boutons button,.ligne button{border:1px solid color-mix(in srgb,var(--violet) 22%,transparent);box-shadow:0 4px 12px var(--ombre)}
+#graphe{border:1px solid color-mix(in srgb,var(--violet) 25%,transparent)}
+.aide{line-height:1.65}
+@media(max-width:900px){.calc{grid-template-columns:minmax(0,1fr) minmax(230px,.72fr)}}
+@media(max-width:700px){header{position:static;align-items:flex-start}header .droite{width:100%}nav{width:100%;overflow-x:auto;flex-wrap:nowrap}nav button{white-space:nowrap}.calc{grid-template-columns:1fr}.historique{min-height:190px;max-height:340px}.sci{grid-template-columns:repeat(4,minmax(0,1fr))}.sci button{height:44px}.pave{grid-template-rows:repeat(5,58px)}}
+@media(min-width:1100px){.appareil{min-height:100%}.historique{min-height:100%}}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Calculatrice scientifique 💗</h1>
+
+  <div class="droite">
+    <nav>
+      <button id="t-calc" class="actif" onclick="onglet('calc')">Calculatrice</button>
+      <button id="t-equ" onclick="onglet('equ')">Équations</button>
+      <button id="t-graphe" onclick="onglet('graphe')">Graphique</button>
+      <button id="t-conv" onclick="onglet('conv')">Conversions</button>
+      <button id="t-base" onclick="onglet('base')">Bases</button>
+      <button id="t-prog" onclick="onglet('prog')">Programmable</button>
+    </nav>
+
+    <button id="theme" onclick="changerTheme()" title="Mode clair/sombre">☀️</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- الحاسبة -->
+  <section id="p-calc">
+    <div class="calc">
+
+      <div class="appareil">
+        <div class="lcd">
+          <div class="haut">
+            <button onclick="memoire('MC')">MC</button>
+            <button onclick="memoire('MR')">MR</button>
+            <button onclick="memoire('M+')">M+</button>
+            <button onclick="memoire('M-')">M−</button>
+            <span id="mem"></span>
+          </div>
+          <div id="status" class="aide" style="margin-top:4px;text-align:left">DEG · Ready</div>
+          <div id="trace"></div>
+          <div id="ecran">0</div>
+        </div>
+
+        <div class="grille sci" id="sci"></div>
+        <div class="grille pave" id="pave"></div>
+      </div>
+
+      <aside class="historique">
+        <div class="titre">
+          <h2>Historique 💗</h2>
+          <button onclick="viderHisto()">Effacer</button>
+        </div>
+        <ul id="histo"></ul>
+      </aside>
+
+    </div>
+    <div class="carte" style="max-width:724px;margin:20px auto 0">
+      <h2>HMI Design Choices</h2>
+      <div class="aide">
+        <p><b>1. Visual grouping:</b> scientific functions, memory controls and number keys are placed in separate groups.</p>
+        <p><b>2. Inverse trigonometry:</b> sin⁻¹, cos⁻¹ and tan⁻¹ calculate arcsin, arccos and arctan. Their answers follow the selected DEG/RAD mode.</p>
+        <p><b>3. Immediate feedback:</b> the display shows the expression, result and clear error messages.</p>
+        <p><b>4. Consistency and accessibility:</b> buttons keep predictable behavior, keyboard input is supported, and the light/dark themes improve viewing comfort.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- حل المعادلات -->
+  <section id="p-equ" hidden>
+    <div class="carte">
+      <h2>ax² + bx + c = 0</h2>
+
+      <div class="champs">
+        <label>a
+          <input id="a" type="number" step="any" value="1">
+        </label>
+
+        <label>b
+          <input id="b" type="number" step="any" value="-3">
+        </label>
+
+        <label>c
+          <input id="c" type="number" step="any" value="2">
+        </label>
+      </div>
+
+      <div class="boutons">
+        <button class="egal" onclick="resoudre()">Résoudre</button>
+        <button onclick="voirCourbe()">Voir la courbe</button>
+      </div>
+
+      <div id="sortie"></div>
+    </div>
+  </section>
+
+  <!-- رسم 3 دوال -->
+  <section id="p-graphe" hidden>
+    <div class="carte large">
+      <h2>Trace Functions 💗</h2>
+
+      <div class="champs">
+        <label>f₁(x)
+          <input id="fx" value="tan(x)" oninput="tracer()">
+        </label>
+
+        <label>f₂(x)
+          <input id="fx2" value="1+x" oninput="tracer()">
+        </label>
+
+        <label>f₃(x)
+          <input id="fx3" value="x^2-1" oninput="tracer()">
+        </label>
+      </div>
+
+      <div class="ligne">
+        <button onclick="zoom(1/1.25)">− Zoom</button>
+        <button onclick="zoom(1.25)">+ Zoom</button>
+        <button class="egal" onclick="tracer()">Tracer les 3 fonctions</button>
+      </div>
+
+      <canvas id="graphe" width="800" height="600"></canvas>
+
+      <p class="aide">
+        أمثلة: x^2-4، 2*x، sin(x)، sqrt(x)، abs(x)، ln(x)، exp(x).
+        الرسم يستعمل الراديان.
+      </p>
+    </div>
+  </section>
+
+  <!-- تحويل الوحدات -->
+  <section id="p-conv" hidden>
+    <div class="carte">
+      <h2>Convert Units 💗</h2>
+
+      <label>Value
+        <input id="valConv" type="number" step="any" value="1" oninput="convertirUnite()">
+      </label>
+
+      <div class="champs">
+        <label>Unit Type
+          <select id="typeConv" onchange="changerUnites()">
+            <option value="length">Length</option>
+            <option value="mass">Mass</option>
+            <option value="volume">Volume</option>
+            <option value="time">Time</option>
+            <option value="temp">Temperature</option>
+          </select>
+        </label>
+
+        <label>from
+          <select id="fromConv" onchange="convertirUnite()"></select>
+        </label>
+
+        <label>to
+          <select id="toConv" onchange="convertirUnite()"></select>
+        </label>
+      </div>
+
+      <div id="resultConv"></div>
+
+      <p class="aide">
+        Note: It is not possible to convert km to kg directly because the first is a unit of length
+        and the second is a unit of mass. Choose the same type of quantity.
+      </p>
+    </div>
+  </section>
+
+  <!-- تحويل الأنظمة العددية -->
+  <section id="p-base" hidden>
+    <div class="carte">
+      <h2>Convert Base Systems 💗</h2>
+
+      <label>Value
+        <input id="valBase" value="1010" oninput="convertirBase()">
+      </label>
+
+      <label style="margin-top:12px">Original Base
+        <select id="fromBase" onchange="convertirBase()">
+          <option value="2">Binary (base 2)</option>
+          <option value="8">Octal (base 8)</option>
+          <option value="10">Decimal (base 10)</option>
+          <option value="16">Hexadecimal (base 16)</option>
+        </select>
+      </label>
+
+      <div id="resultBase"></div>
+    </div>
+  </section>
+
+  <section id="p-prog" hidden>
+    <div class="carte">
+      <h2>Programmable Functions 💗</h2>
+      <p class="aide">Define reusable functions, then calculate their values. Example: f(x)=x^2+1</p>
+      <label>Function definition
+        <input id="definition" value="f(x)=x^2+1" placeholder="f(x)=x^2+1">
+      </label>
+      <div class="boutons">
+        <button class="egal" onclick="definirFonction()">Save function</button>
+        <button onclick="effacerFonctions()">Clear functions</button>
+      </div>
+      <label style="margin-top:14px">Evaluate
+        <input id="appel" value="f(3)" placeholder="f(3)">
+      </label>
+      <div class="boutons"><button class="egal" onclick="evaluerFonction()">Calculate</button></div>
+      <div id="progSortie"></div>
+      <div id="listeFonctions" class="aide">No saved functions.</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let expr = "";
+let lastExpression = "";
+let fini = false;
+let mem = 0;
+let histo = [];
+let deg = true;
+let ech = 40;
+
+const arrondi = r => Number(r.toPrecision(12));
+
+/* إنشاء أزرار الحاسبة */
+
+const SCI = [
+  ["sin","sin("],["cos","cos("],["tan","tan("],["sin⁻¹","asin("],["cos⁻¹","acos("],["tan⁻¹","atan("],
+  ["log","log("],["ln","ln("],["exp","exp("],["√","sqrt("],["|x|","abs("],["n!","fact("],
+  ["x²","^2"],["xʸ","^"],["1/x","1/("],["π","π"],["e","e"],["EE","EE"],
+  ["Ans","Ans"],["(","("],[")",")"],["DEG","DEG"]
+];
+
+const PAVE = [
+  ["C","C"],["⌫","⌫"],["÷","÷"],["7","7"],
+  ["8","8"],["9","9"],["×","×"],["4","4"],
+  ["5","5"],["6","6"],["−","−"],["1","1"],
+  ["2","2"],["3","3"],["+","+"],["0","0"],
+  [".","."],["=","="]
+];
+
+function creerBouton([texte,valeur]) {
+  const b = document.createElement("button");
+  b.textContent = texte;
+  b.dataset.k = valeur;
+
+  if (valeur === "DEG") b.id = "deg";
+  if (["asin(","acos(","atan("].includes(valeur)) {
+    b.classList.add("inverse");
+    const labels = {"asin(":"Inverse sine (arcsin)","acos(":"Inverse cosine (arccos)","atan(":"Inverse tangent (arctan)"};
+    b.title = labels[valeur];
+    b.setAttribute("aria-label", labels[valeur]);
+  }
+  if ("÷×−+".includes(valeur) && valeur.length === 1) b.classList.add("op");
+  if (valeur === "C" || valeur === "⌫") b.classList.add("c");
+  if (valeur === "=") b.classList.add("egal");
+
+  return b;
+}
+
+SCI.forEach(x => $("sci").appendChild(creerBouton(x)));
+PAVE.forEach(x => $("pave").appendChild(creerBouton(x)));
+
+document.addEventListener("click",e => {
+  const bouton = e.target.closest("[data-k]");
+  if (bouton) touche(bouton.dataset.k);
+});
+
+
+function touche(v) {
+  if (v === "C") return effacer();
+  if (v === "⌫") return retour();
+  if (v === "=") return egal();
+  if (v === "DEG") return basculer();
+  if (v === "EE") return ecrire("E");
+  if (v === "Ans") return ecrire("Ans");
+  ecrire(v);
+}
+
+
+document.addEventListener("keydown",e => {
+  if ($("p-calc").hidden) return;
+  if (["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  const map = {
+    "*":"×",
+    "/":"÷",
+    "-":"−",
+    "Enter":"=",
+    "Backspace":"⌫",
+    "Escape":"C",
+    "p":"π"
+  };
+
+  const v = map[e.key] || e.key;
+
+  if (/^[0-9.+()^]$/.test(v) || "×÷−=⌫Cπ".includes(v)) {
+    e.preventDefault();
+    touche(v);
+  }
+});
+
+
+function verifierExpression(expression) {
+  const exp=String(expression).trim();
+  if(!exp) throw new Error("Expression is empty.");
+  let depth=0;
+  for(const ch of exp) {
+    if(ch==="(") depth++;
+    if(ch===")") { depth--; if(depth<0) throw new Error("Unexpected closing parenthesis )."); }
+  }
+  if(depth>0) throw new Error("Missing closing parenthesis ).");
+  return true;
+}
+
+const userFunctions = Object.create(null);
+let lastAnswer = 0;
+
+function tokenize(source) {
+  const text=String(source).replace(/\s+/g,"").replace(/−/g,"-").replace(/×/g,"*").replace(/÷/g,"/").replace(/π/g,"pi");
+  const tokens=[]; let i=0;
+  while(i<text.length) {
+    const rest=text.slice(i);
+    const number=rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/);
+    const word=rest.match(/^[a-zA-Z_][a-zA-Z_0-9]*/);
+    if(number) { tokens.push({type:"number",value:Number(number[0])}); i+=number[0].length; }
+    else if(word) { tokens.push({type:"name",value:word[0].toLowerCase()}); i+=word[0].length; }
+    else if("+-*/^!()".includes(text[i])) { tokens.push({type:text[i],value:text[i]}); i++; }
+    else throw new Error("Invalid character: "+text[i]);
+  }
+  return tokens;
+}
+
+function parseMath(source,xValue,useDegrees=true,depth=0) {
+  if(depth>20) throw new Error("Function nesting is too deep.");
+  const t=tokenize(source); let pos=0;
+  const peek=()=>t[pos], take=()=>t[pos++];
+  const isStart=z=>z&&(z.type==="number"||z.type==="name"||z.type==="(");
+  const fact=n=>{
+    if(!Number.isInteger(n)||n<0||n>170) throw new Error("Factorial requires an integer from 0 to 170.");
+    let r=1; for(let j=2;j<=n;j++) r*=j; return r;
+  };
+  function primary() {
+    const z=take(); if(!z) throw new Error("Incomplete expression.");
+    let v;
+    if(z.type==="number") v=z.value;
+    else if(z.type==="(") {
+      v=addition();
+      if(!peek()||take().type!==")") throw new Error("Missing closing parenthesis ).");
+    } else if(z.type==="name") {
+      const n=z.value;
+      if(peek()&&peek().type==="(") {
+        take(); const a=addition();
+        if(!peek()||take().type!==")") throw new Error("Missing closing parenthesis after "+n+".");
+        const k=useDegrees?Math.PI/180:1;
+        const fns={sin:q=>Math.sin(q*k),cos:q=>Math.cos(q*k),
+          tan:q=>Math.abs(Math.cos(q*k))<1e-12?NaN:Math.tan(q*k),
+          asin:q=>Math.asin(q)/k,acos:q=>Math.acos(q)/k,atan:q=>Math.atan(q)/k,
+          arcsin:q=>Math.asin(q)/k,arccos:q=>Math.acos(q)/k,arctan:q=>Math.atan(q)/k,
+          log:Math.log10,ln:Math.log,sqrt:Math.sqrt,exp:Math.exp,abs:Math.abs,fact:fact};
+        if(fns[n]) v=fns[n](a);
+        else if(userFunctions[n]) v=parseMath(userFunctions[n],a,useDegrees,depth+1);
+        else throw new Error("Unknown function: "+n);
+      } else {
+        if(n==="pi") v=Math.PI;
+        else if(n==="e") v=Math.E;
+        else if(n==="x"&&xValue!==undefined) v=xValue;
+        else if(n==="ans") v=lastAnswer;
+        else throw new Error("Unknown constant: "+n);
+      }
+    } else throw new Error("Unexpected symbol.");
+    while(peek()&&peek().type==="!") { take(); v=fact(v); }
+    return v;
+  }
+  function power() { let a=primary(); if(peek()&&peek().type==="^") { take(); a=Math.pow(a,unary()); } return a; }
+  function unary() {
+    if(peek()&&peek().type==="+") { take(); return unary(); }
+    if(peek()&&peek().type==="-") { take(); return -unary(); }
+    return power();
+  }
+  function multiply() {
+    let a=unary();
+    while(peek()) {
+      const z=peek();
+      if(z.type==="*"||z.type==="/") { take(); const b=unary(); a=z.type==="*"?a*b:a/b; }
+      else if(isStart(z)) a*=unary();
+      else break;
+    }
+    return a;
+  }
+  function addition() {
+    let a=multiply();
+    while(peek()&&(peek().type==="+"||peek().type==="-")) {
+      const op=take().type,b=multiply(); a=op==="+"?a+b:a-b;
+    }
+    return a;
+  }
+  if(!t.length) throw new Error("Expression is empty.");
+  const result=addition();
+  if(pos!==t.length) throw new Error("Unexpected symbol or missing operator.");
+  if(!Number.isFinite(result)) throw new Error("Math error: result is not a finite number.");
+  return result;
+}
+function compile(expression,useDegrees=deg) {
+  verifierExpression(expression);
+  return ()=>parseMath(expression,undefined,useDegrees);
+}
+function calculer(expression) { return Number(parseMath(expression,undefined,deg).toPrecision(12)); }
+
+/* الشاشة */
+
+function afficher() {
+  $("trace").textContent = lastExpression ? "Expression: " + lastExpression : "Expression: —";
+  $("ecran").textContent = fini ? (expr || "0") : (expr ? "…" : "0");
+  $("ecran").scrollLeft = $("ecran").scrollWidth;
+}
+
+function ecrire(k) {
+  if (fini && !/^[+−\-×÷*/^]/.test(k)) {
+    expr = "";
+  }
+
+  fini = false;
+  expr += k;
+  lastExpression = expr;
+  afficher();
+}
+
+function effacer() {
+  expr = "";
+  lastExpression = "";
+  fini = false;
+  lastExpression = "";
+  $("status").textContent = (deg ? "DEG" : "RAD") + " · Ready";
+  afficher();
+}
+
+function retour() {
+  expr = expr.replace(/(?:sin|cos|tan|asin|acos|atan|log|ln|sqrt|exp|abs|fact)\($|Ans$|[\s\S]$/,"");
+  fini = false;
+  lastExpression = expr;
+  afficher();
+}
+
+function erreur(message) {
+  $("ecran").textContent = expr || "Error";
+  $("trace").textContent = "Error: " + (message || "Invalid calculation");
+  $("status").textContent = (deg ? "DEG" : "RAD") + " · Error";
+}
+
+function basculer() {
+  deg = !deg;
+  $("deg").textContent = deg ? "DEG" : "RAD";
+  $("status").textContent = (deg ? "DEG" : "RAD") + " · Ready";
+}
+
+function montrer(expression,resultat) {
+  lastExpression = expression;
+  $("status").textContent = (deg ? "DEG" : "RAD") + " · Result ready";
+
+  histo.unshift({
+    texte:expression,
+    r:resultat
+  });
+
+  expr = (Math.abs(resultat)>=1e12 || (resultat!==0 && Math.abs(resultat)<1e-9))
+    ? resultat.toExponential(8).replace(/\.0+e/,"e").replace(/(\.\d*?)0+e/,"$1e")
+    : String(resultat);
+  lastAnswer = resultat;
+  fini = true;
+
+  afficher();
+  afficherHisto();
+}
+
+/* زر المساواة: يتحقق أولا ثم يحسب */
+
+function egal() {
+  if (!expr) return;
+
+  try {
+    verifierExpression(expr);
+
+    const resultat = calculer(expr);
+    montrer(expr,resultat);
+  } catch (e) {
+    erreur(e.message);
+  }
+}
+
+/* الذاكرة */
+
+function memoire(type) {
+  try {
+    if (type === "MC") mem = 0;
+
+    if (type === "MR") {
+      ecrire(String(mem));
+      return;
+    }
+
+    if (type === "M+") {
+      mem += calculer(expr || "0");
+    }
+
+    if (type === "M-") {
+      mem -= calculer(expr || "0");
+    }
+
+    mem = arrondi(mem);
+    $("mem").textContent = mem ? "M = " + mem : "";
+  } catch (e) {
+    erreur(e.message);
+  }
+}
+
+/* سجل العمليات */
+
+function afficherHisto() {
+  $("histo").replaceChildren();
+
+  histo.forEach((h,i) => {
+    const li = document.createElement("li");
+    const small = document.createElement("small");
+    const bold = document.createElement("b");
+
+    small.textContent = h.texte + " =";
+    bold.textContent = h.r;
+
+    li.append(small,bold);
+    li.addEventListener("click",() => {
+      expr = String(histo[i].r);
+      lastExpression = h.texte;
+      fini = true;
+      $("status").textContent = (deg ? "DEG" : "RAD") + " · History value";
+      afficher();
+    });
+
+    $("histo").appendChild(li);
+  });
+}
+
+function viderHisto() {
+  histo = [];
+  afficherHisto();
+}
+
+const texte = v => String(Number(v.toPrecision(12)));
+
+function resoudre() {
+  const values = ["a","b","c"].map(id => $(id).value.trim());
+
+  if (values.some(v => v === "" || !Number.isFinite(Number(v)))) {
+    $("sortie").innerHTML =
+      '<p class="err">Please enter valid values for a, b, and c.</p>';
+    return;
+  }
+
+  const [a,b,c] = values.map(Number);
+
+  if (a === 0) {
+    if (b === 0) $("sortie").innerHTML = c === 0 ? "<p>All real numbers are solutions.</p>" : '<p class="err">No solution.</p>';
+    else $("sortie").innerHTML = "<p>Linear equation: x = " + texte(-c/b) + "</p>";
+    return;
+  }
+
+  const delta = b*b - 4*a*c;
+  let solutions = [];
+
+  if (delta > 0) {
+    solutions = [
+      (-b + Math.sqrt(delta))/(2*a),
+      (-b - Math.sqrt(delta))/(2*a)
+    ].map(texte);
+  } else if (delta === 0) {
+    solutions = [texte(-b/(2*a))];
+  } else {
+    const re = texte(-b/(2*a));
+    const im = texte(Math.sqrt(-delta)/(2*Math.abs(a)));
+
+    solutions = [
+      re + " + " + im + "i",
+      re + " - " + im + "i"
+    ];
+  }
+
+  $("sortie").replaceChildren();
+
+  const pDelta = document.createElement("p");
+  pDelta.textContent = "Δ = " + texte(delta);
+  $("sortie").appendChild(pDelta);
+
+  solutions.forEach((s,i) => {
+    const p = document.createElement("p");
+    p.textContent = "x" + (i+1) + " = " + s;
+    $("sortie").appendChild(p);
+  });
+}
+
+function voirCourbe() {
+  $("fx").value =
+    $("a").value + "*x^2+(" +
+    $("b").value + ")*x+(" +
+    $("c").value + ")";
+
+  onglet("graphe");
+}
+
+/* الرسم البياني لثلاث دوال */
+
+function zoom(factor) {
+  ech = Math.min(200,Math.max(5,ech*factor));
+  tracer();
+}
+
+$("graphe").addEventListener("wheel",e => {
+  e.preventDefault();
+  zoom(e.deltaY < 0 ? 1.15 : 1/1.15);
+},{passive:false});
+
+function tracer() {
+  const canvas = $("graphe");
+  const ctx = canvas.getContext("2d");
+
+  const W = canvas.width;
+  const H = canvas.height;
+  const cx = W/2;
+  const cy = H/2;
+
+  const style = getComputedStyle(document.documentElement);
+  const doux = style.getPropertyValue("--doux").trim();
+  const grille = style.getPropertyValue("--grille").trim();
+  const couleurs = [
+    style.getPropertyValue("--corail").trim(),
+    style.getPropertyValue("--menthe").trim(),
+    style.getPropertyValue("--violet").trim()
+  ];
+
+  ctx.clearRect(0,0,W,H);
+
+  // رسم الشبكة والمحاور
+  ctx.strokeStyle = grille;
+  ctx.lineWidth = 1;
+
+  for (let x = cx % ech; x < W; x += ech) {
+    ctx.beginPath();
+    ctx.moveTo(x,0);
+    ctx.lineTo(x,H);
+    ctx.stroke();
+  }
+
+  for (let y = cy % ech; y < H; y += ech) {
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(W,y);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = doux;
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.moveTo(0,cy);
+  ctx.lineTo(W,cy);
+  ctx.moveTo(cx,0);
+  ctx.lineTo(cx,H);
+  ctx.stroke();
+
+  // الأرقام على المحاور
+  ctx.fillStyle = doux;
+  ctx.font = "12px system-ui";
+  ctx.textAlign = "center";
+
+  for (let x = -Math.floor(cx/ech); x <= Math.floor(cx/ech); x++) {
+    if (x !== 0) ctx.fillText(x,cx+x*ech,cy+16);
+  }
+
+  for (let y = -Math.floor(cy/ech); y <= Math.floor(cy/ech); y++) {
+    if (y !== 0) ctx.fillText(y,cx-8,cy-y*ech+4);
+  }
+
+  // كل دالة ترسم بلون مختلف
+  ["fx","fx2","fx3"].forEach((id,index) => {
+    let f;
+
+    try {
+      const expression = $(id).value.trim();
+
+      if (!expression) return;
+
+// compilerGraph يسمح بالمتغير x فقط
+      f = compilerGraph(expression);
+    } catch {
+      ctx.fillStyle = couleurs[index];
+      ctx.textAlign = "left";
+      ctx.fillText("f" + (index+1) + ": invalid expression",12,22+index*20);
+      return;
+    }
+
+    ctx.strokeStyle = couleurs[index];
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+
+    let pen = false;
+    let lastY = 0;
+
+    for (let px = 0; px <= W; px++) {
+      const x = (px-cx)/ech;
+      let y;
+
+      try {
+        y = f(x);
+      } catch {
+        pen = false;
+        continue;
+      }
+
+      const py = cy-y*ech;
+
+      if (!Number.isFinite(py) || Math.abs(py) > H*3) {
+        pen = false;
+        continue;
+      }
+
+      if (!pen || Math.abs(py-lastY) > H*0.45) {
+        ctx.moveTo(px,py);
+      } else {
+        ctx.lineTo(px,py);
+      }
+
+      lastY = py;
+      pen = true;
+    }
+
+    ctx.stroke();
+  });
+}
+
+/* مترجم خاص بالرسم، يسمح بالمتغير x */
+
+function compilerGraph(expression) {
+  return x => parseMath(expression,x,false);
+}
+
+/* تبديل الصفحات */
+
+function onglet(nom) {
+  for (const p of ["calc","equ","graphe","conv","base","prog"]) {
+    $("p-"+p).hidden = p !== nom;
+    $("t-"+p).classList.toggle("actif",p === nom);
+  }
+
+  if (nom === "graphe") tracer();
+}
+
+/* تحويل الوحدات */
+
+const unites = {
+  length:{
+    "mm":0.001,
+    "cm":0.01,
+    "m":1,
+    "km":1000,
+    "inch":0.0254,
+    "ft":0.3048,
+    "mile":1609.344,
+    "μm":0.000001,
+    "nm":0.000000001
+  },
+
+  mass:{
+    "mg":0.000001,
+    "g":0.001,
+    "kg":1,
+    "tonne":1000,
+    "lb":0.45359237,
+    "oz":0.028349523125,
+    "stone":6.35029318
+  },
+
+  volume:{
+    "mL":0.001,
+    "L":1,
+    "m³":1000,
+    "US gal":3.785411784,
+    "cm³":0.001,
+    "cup":0.2365882365
+  },
+
+  time:{
+    "s":1,
+    "min":60,
+    "h":3600,
+    "day":86400,
+    "week":604800,
+    "ms":0.001,
+    "year":31557600
+  },
+
+  temp:{
+    "°C":1,
+    "°F":1,
+    "K":1
+  }
+};
+
+function changerUnites() {
+  const options = Object.keys(unites[$("typeConv").value]);
+
+  $("fromConv").innerHTML = "";
+  $("toConv").innerHTML = "";
+
+  options.forEach(unit => {
+    $("fromConv").add(new Option(unit,unit));
+    $("toConv").add(new Option(unit,unit));
+  });
+
+  $("toConv").selectedIndex = Math.min(1,options.length-1);
+
+  convertirUnite();
+}
+
+function convertirUnite() {
+  const type = $("typeConv").value;
+  const raw = $("valConv").value;
+  const val = Number(raw);
+  const from = $("fromConv").value;
+  const to = $("toConv").value;
+
+  if (raw.trim() === "" || !Number.isFinite(val)) {
+    $("resultConv").innerHTML =
+      '<p class="err">Please enter a valid value.</p>';
+    return;
+  }
+
+  let result;
+
+  if (type === "temp") {
+    let celsius;
+
+    if (from === "°C") celsius = val;
+    else if (from === "°F") celsius = (val-32)*5/9;
+    else celsius = val-273.15;
+
+    if (to === "°C") result = celsius;
+    else if (to === "°F") result = celsius*9/5+32;
+    else result = celsius+273.15;
+  } else {
+    result = val*unites[type][from]/unites[type][to];
+  }
+
+  $("resultConv").textContent =
+    "The result is: " + Number(result.toPrecision(10)) + " " + to;
+}
+
+/* تحويل Binary / Octal / Decimal / Hexadecimal */
+
+function convertirBase() {
+  const value = $("valBase").value.trim();
+  const base = Number($("fromBase").value);
+  const out = $("resultBase");
+
+  if (!value) {
+    out.textContent = "";
+    return;
+  }
+
+  const validDigits = {
+    2:/^[01]+$/,
+    8:/^[0-7]+$/,
+    10:/^[0-9]+$/,
+    16:/^[0-9a-fA-F]+$/
+  };
+
+  if (!validDigits[base].test(value)) {
+    out.innerHTML =
+      '<p class="err">The value is not valid for the selected base.</p>';
+    return;
+  }
+
+  const number = parseInt(value,base);
+
+  if (!Number.isSafeInteger(number)) {
+    out.innerHTML =
+      '<p class="err">The number is too large for precise conversion.</p>';
+    return;
+  }
+
+  out.innerHTML = "";
+
+  const results = [
+    ["Binaire",number.toString(2)],
+    ["Octal",number.toString(8)],
+    ["Décimal",number.toString(10)],
+    ["Hexadécimal",number.toString(16).toUpperCase()]
+  ];
+
+  results.forEach(([name,value]) => {
+    const p = document.createElement("p");
+    p.textContent = name + ": " + value;
+    out.appendChild(p);
+  });
+}
+
+function afficherFonctions() {
+  const names=Object.keys(userFunctions);
+  $("listeFonctions").textContent=names.length
+    ? "Saved: "+names.map(n=>n+"(x) = "+userFunctions[n]).join("   |   ")
+    : "No saved functions.";
+}
+function definirFonction() {
+  const raw=$("definition").value.trim();
+  const m=raw.match(/^([a-zA-Z][a-zA-Z0-9_]*)\s*\(\s*x\s*\)\s*=\s*(.+)$/);
+  if(!m) { $("progSortie").innerHTML='<p class="err">Use this format: f(x)=x^2+1</p>'; return; }
+  const name=m[1].toLowerCase(),body=m[2];
+  if(["sin","cos","tan","asin","acos","atan","log","ln","sqrt","exp","abs","fact","pi","e","x","ans"].includes(name)) {
+    $("progSortie").innerHTML='<p class="err">This name is reserved.</p>'; return;
+  }
+  try {
+    parseMath(body,2,deg);
+    userFunctions[name]=body;
+    $("progSortie").textContent=name+"(x) saved successfully.";
+    afficherFonctions();
+  } catch(e) { $("progSortie").innerHTML='<p class="err">Function not saved: '+e.message+'</p>'; }
+}
+function evaluerFonction() {
+  try {
+    const r=arrondi(parseMath($("appel").value,undefined,deg));
+    $("progSortie").textContent=$("appel").value+" = "+r;
+  } catch(e) { $("progSortie").innerHTML='<p class="err">Error: '+e.message+'</p>'; }
+}
+function effacerFonctions() {
+  Object.keys(userFunctions).forEach(k=>delete userFunctions[k]);
+  afficherFonctions(); $("progSortie").textContent="All saved functions were cleared.";
+}
+
+/* الوضع الفاتح والداكن */
+
+function changerTheme() {
+  const root = document.documentElement;
+
+  const light = root.dataset.theme !== "light";
+
+  root.dataset.theme = light ? "light" : "dark";
+  $("theme").textContent = light ? "🌙" : "☀️";
+
+  try {
+    localStorage.setItem("theme",root.dataset.theme);
+  } catch {}
+
+  tracer();
+}
+
+/* تشغيل أولي */
+
+try {
+  document.documentElement.dataset.theme =
+    localStorage.getItem("theme") || "dark";
+} catch {
+  document.documentElement.dataset.theme = "dark";
+}
+
+$("theme").textContent =
+  document.documentElement.dataset.theme === "light" ? "🌙" : "☀️";
+
+changerUnites();
+convertirBase();
+afficherFonctions();
+</script>
+
+</body>
+</html>
